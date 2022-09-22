@@ -488,15 +488,15 @@ class FilFinder2D(BaseInfoMixin):
             vmax = np.percentile(self.flat_img[np.isfinite(self.flat_img)], 90)
             p.clf()
             p.imshow(self.flat_img.value, interpolation='nearest',
-                     origin="lower", cmap='binary', vmin=vmin, vmax=vmax)
+                     origin="lower", cmap='binary', vmin=vmin.value, vmax=vmax.value)
             p.contour(self.mask, colors="r")
             p.title("Mask on Flattened Image.")
             if save_png:
                 p.savefig(self.save_name + "_mask.png")
-            if verbose:
-                p.show()
-            if in_ipynb():
-                p.clf()
+            #if verbose:
+            #    p.show()
+            #if in_ipynb():
+            #    p.clf()
 
     def medskel(self, verbose=False, save_png=False):
         '''
@@ -542,14 +542,14 @@ class FilFinder2D(BaseInfoMixin):
             vmax = np.percentile(self.flat_img[np.isfinite(self.flat_img)], 90)
             p.clf()
             p.imshow(self.flat_img.value, interpolation=None, origin="lower",
-                     cmap='binary', vmin=vmin, vmax=vmax)
+                     cmap='binary', vmin=vmin.value, vmax=vmax.value)
             p.contour(self.skeleton, colors="r")
             if save_png:
                 p.savefig(self.save_name + "_initial_skeletons.png")
-            if verbose:
-                p.show()
-            if in_ipynb():
-                p.clf()
+            #if verbose:
+            #    p.show()
+            #if in_ipynb():
+            #    p.clf()
 
     def analyze_skeletons(self, prune_criteria='all', relintens_thresh=0.2,
                           nbeam_lengths=5, branch_nbeam_lengths=3,
@@ -1361,9 +1361,9 @@ class FilFinder2D(BaseInfoMixin):
             str(self.adapt_thresh) + " pixels"
         new_hdr['BITPIX'] = "8"
 
-        mask_hdu = fits.PrimaryHDU(self.mask.astype(int), new_hdr)
+        #mask_hdu = fits.PrimaryHDU(self.mask.astype(int), new_hdr)
 
-        out_hdu = fits.HDUList([mask_hdu])
+        out_hdu = fits.HDUList()
 
         # Skeletons
 
@@ -1406,7 +1406,7 @@ class FilFinder2D(BaseInfoMixin):
 
             out_hdu.append(model_hdu)
 
-        out_hdu.writeto("{0}_image_output.fits".format(save_name),
+        out_hdu.writeto("{0}.fits".format(save_name),
                         **kwargs)
 
     def save_stamp_fits(self, save_name=None, pad_size=20 * u.pix,
