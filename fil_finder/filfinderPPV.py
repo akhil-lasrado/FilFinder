@@ -4,6 +4,7 @@
 Created on Mon Mar 23 22:07:25 2020
 
 @author: samuelfielder
+(edited)
 """
 
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ import skimage.morphology as mo
 import networkx as nx
 import warnings
 import astropy.units as u
+from scipy.stats import lognorm
 
 from .filament import FilamentPPV
 from .skeleton3D import Skeleton3D
@@ -84,9 +86,26 @@ class FilFinderPPV(Skeleton3D):
             self.flat_img = self._image
 
         else:
-            # TODO Add in here
-            return
+         
+            # Make flattened image
+            if flatten_percent is None:
+                # Fit to a log-normal
+                fit_vals = lognorm.fit(self.image[~np.isnan(self.image)])
 
+                median = lognorm.median(*fit_vals)
+                std = lognorm.std(*fit_vals)
+                thresh_val = median + 2 * std
+            else:
+                thresh_val = np.percentile(self.image[~np.isnan(self.image)],
+                                           flatten_percent)
+
+            #self._flatten_threshold = data_unit_check(thresh_val,
+            #                                          self.image.unit)
+
+            # Make the units dimensionless
+            self.flat_img = thresh_val * \
+                np.arctan(self.image)
+        
     def create_mask(self, adapt_thresh=9, glob_thresh=0.0,
                     selem_disc_radius=2, selem_spectral_width=1,
                     min_object_size=27*3,
@@ -311,7 +330,7 @@ class FilFinderPPV(Skeleton3D):
 
         return
 
-    def plot_data_mask_slice(self, slice_number):
+    def plot_data_mask_slice(self, slice_number, origin='lower'):
         """
         Plots slice of mask, alongside image.
 
@@ -323,5 +342,5 @@ class FilFinderPPV(Skeleton3D):
         """
         fig, axs = plt.subplots(2, 1)
 
-        axs[0].imshow(self.image[slice_number])
-        axs[1].imshow(self.mask[slice_number])
+        axs[0].imshow(self.image[slice_number],origin=origin)
+        axs[1].imshow(self.mask[slice_number],origin=origin)
